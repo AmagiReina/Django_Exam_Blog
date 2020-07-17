@@ -1,0 +1,87 @@
+{% extends "blog/base.html" %}
+{% load blog_tags %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+    <!-- Post Information -->
+    <div class="card mb-5 mt-5 bg-light" id="post-info">
+        <div class="card-header border border-dark">
+            <h1> {{ post.title }}</h1>
+        </div>
+        <div class="card-body border border-dark">
+            <div class="card-text lead">
+                {{ post.body|markdown }}
+            </div>
+            <p>
+                <a href="{% url "blog:post_share" post.id %}" class="btn btn-primary">
+                    Share this post
+                </a>
+            </p>
+        </div>
+        <div class="card-footer text-muted border border-dark">
+            <p class="date">
+                Published {{ post.publish }} by <strong>{{ post.author }}</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- Similar posts section -->
+    <div class="card mt-3" id="similar-posts">
+        <div class="card-header border border-dark">
+            <h2>Similar posts</h2>
+        </div>
+        <div class="card-body border border-dark">
+            {% for post in similar_posts %}
+                <p>
+                    <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+                </p>
+            {% empty %}
+                There are no similar posts yet.
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- comment section -->
+    <div class="container mt-3" id="comment-section">
+        {% with comments.count as total_comments %}
+            <h2>
+                {{ total_comments }} comment{{ total_comments|pluralize }}
+            </h2>
+        {% endwith %}
+        {% for comment in comments %}
+            <div id="comment" class="card mb-5 border border-dark rounded">
+            <div class="card-header bg-primary">
+                <p id="info" class="text-md-left">
+                    Comment by <strong>{{ comment.name }}</strong>
+                    <p><em>{{ comment.created }}</em></p>
+                </p>
+            </div>
+            <div class="card-body">
+                {{ comment.body|linebreaks }}
+            </div>
+        </div>
+        {% empty %}
+            <p> There are no comments yet</p>
+        {% endfor %}
+    </div>
+
+    <!-- comment form -->
+    <div class="container mt-3 mb-3" id="comment-form">
+        {% if new_comment %}
+            <h2 class="bg-success">Your comment has been added</h2>
+        {% else %}
+            <h2>Add a new comment</h2>
+            <form method="post">
+                {{ comment_form|crispy}}
+                {% csrf_token %}
+                <p>
+                    <input type="submit"
+                        class="btn btn-success"
+                        value="Add comment">
+                </p>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}
